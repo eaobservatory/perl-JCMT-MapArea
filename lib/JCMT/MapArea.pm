@@ -48,12 +48,12 @@ header keys and values being header values.
 =cut
 
 sub region {
-  my %args = shift;
+  my %args = @_;
   if( ! defined( $args{'header'} ) ) {
     return undef;
   }
 
-  my $header = $args{'header'};
+  my $hdr = $args{'header'};
 
   # Retrieve header values.
   my $basec1   = $hdr->{ "BASEC1" };
@@ -63,7 +63,38 @@ sub region {
   my $map_pa   = $hdr->{ "MAP_PA" };
   my $map_hght = $hdr->{ "MAP_HGHT" };
   my $map_wdth = $hdr->{ "MAP_WDTH" };
-  my $tracksys = $hdr->{ "TRACKSYS" };
+  my $tracksys = uc( $hdr->{ "TRACKSYS" } );
+
+  if( ! defined( $basec1 ) ) {
+    croak "Must define BASEC1 to calculate AST Region";
+  }
+  if( ! defined( $basec2 ) ) {
+    croak "Must define BASEC2 to calculate AST Region";
+  }
+  if( ! defined( $map_x ) ) {
+    croak "Must define MAP_X to calculate AST Region";
+  }
+  if( ! defined( $map_y ) ) {
+    croak "Must define MAP_Y to calculate AST Region";
+  }
+  if( ! defined( $map_pa ) ) {
+    croak "Must define MAP_PA to calculate AST Region";
+  }
+  if( ! defined( $map_hght ) ) {
+    croak "Must define MAP_HGHT to calculate AST Region";
+  }
+  if( ! defined( $map_wdth ) ) {
+    croak "Must define MAP_WDTH to calculate AST Region";
+  }
+  if( ! defined( $tracksys ) ) {
+    carp "TRACKSYS not defined; defaulting to J2000";
+    $tracksys = 'J2000';
+  }
+
+  my $date_obs = $hdr->{ "DATE_OBS" };
+  if( $tracksys eq 'APP' && ! defined( $date_obs ) ) {
+    croak "When TRACKSYS is APP, DATE_OBS must be defined";
+  }
 
   my $base = new Astro::Coords( ra => $basec1,
                                 dec => $basec2,
@@ -115,8 +146,12 @@ sub region {
             my $c4ra, my $c4dec );
 
 # Create the region.
-  my $ast_system = $TRACK2SYS{ uc( $tracksys ) };
-  my $skyFrame = new Starlink::AST::SkyFrame( "SYSTEM=$ast_system" );
+  my $ast_system = $TRACK2AST{ uc( $tracksys ) };
+  my $params = "SYSTEM=$ast_system";
+  if( $tracksys eq 'APP' ) {
+    $params .= ",EPOCH=$date_obs";
+  }
+  my $skyFrame = new Starlink::AST::SkyFrame( $params );
   my $region = Starlink::AST::Polygon->new( $skyFrame,
                                             [ $c1ra, $c2ra, $c3ra, $c4ra ],
                                             [ $c1dec, $c2dec, $c3dec, $c4dec ],
