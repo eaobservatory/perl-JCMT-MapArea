@@ -91,7 +91,7 @@ sub region {
     $tracksys = 'J2000';
   }
 
-  my $date_obs = $hdr->{ "DATE_OBS" };
+  my $date_obs = $hdr->{ "DATE-OBS" };
   if( $tracksys eq 'APP' && ! defined( $date_obs ) ) {
     croak "When TRACKSYS is APP, DATE_OBS must be defined";
   }
