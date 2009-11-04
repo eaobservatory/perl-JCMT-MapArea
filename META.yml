@@ -1,0 +1,27 @@
+---
+name: JCMT::MapArea
+version: 0.01
+author:
+  - 'Brad Cavanagh <b.cavanagh@jach.hawaii.edu>'
+abstract: Calculate requested map area for JCMT instruments.
+license: gpl
+build_requires:
+  Test::More: 0
+requires:
+  Astro::Coords: 0
+  Astro::SLA: 0
+  Starlink::AST: 0
+  perl: v5.8.0
+configure_requires:
+  Module::Build: 0.340201
+generated_by: Module::Build version 0.340201
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+provides:
+  JCMT::MapArea:
+    file: lib/JCMT/MapArea.pm
+    version: 0.01
+resources:
+  license: http://opensource.org/licenses/gpl-license.php
+  repository: /jac_sw/gitroot/perl-JCMT-MapArea.git
