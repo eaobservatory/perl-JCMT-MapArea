@@ -6,6 +6,8 @@ use Module::Build;
 
 my $build = Module::Build->new
   (
+   module_name => 'JCMT::MapArea',
+   license => 'gpl',
    dist_name => 'JCMT::MapArea',
    dist_author => [
                    'Brad Cavanagh <b.cavanagh@jach.hawaii.edu>',
