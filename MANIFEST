@@ -1,3 +1,4 @@
 Build.PL
 lib/JCMT/MapArea.pm
 MANIFEST
+META.yml
