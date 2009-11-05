@@ -96,12 +96,25 @@ sub region {
     croak "When TRACKSYS is APP, DATE_OBS must be defined";
   }
 
-  my $base = new Astro::Coords( ra => $basec1,
-                                dec => $basec2,
-                                type => $tracksys,
-                                units => 'degrees' );
-  my $basera = $base->ra->radians;
-  my $basedec = $base->dec->radians;
+  my ( $base, $basera, $basedec );
+  if( $tracksys ne 'APP' ) {
+    $base = new Astro::Coords( ra => $basec1,
+                               dec => $basec2,
+                               type => $tracksys,
+                               units => 'degrees' );
+    $basera = $base->ra->radians;
+    $basedec = $base->dec->radians;
+  } else {
+    $base = new Astro::Coords::Interpolated( ra1 => $basec1,
+                                             ra2 => $basec1,
+                                             dec1 => $basec2,
+                                             dec2 => $basec2,
+                                             units => 'degrees',
+                                             mjd1 => 0,
+                                             mjd2 => 0,
+                                           );
+    ( $basera, $basedec ) = $base->apparent();
+  }
 
 # Calculate the rotation angle in radians. Note that this position
 # angle is north of east whereas that in the header is east of north.
