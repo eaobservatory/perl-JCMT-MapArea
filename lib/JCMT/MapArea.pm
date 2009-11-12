@@ -175,7 +175,9 @@ sub region {
 
 }
 
-=item <_rotate>
+=begin __PRIVATE__
+
+=item B<_rotate>
 
 Rotate an X and Y position through a given angle, returning the
 rotated position.
@@ -196,6 +198,8 @@ sub _rotate {
 
   return ( $xprime, $yprime );
 }
+
+=end __PRIVATE__
 
 =back
 
