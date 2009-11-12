@@ -56,8 +56,8 @@ sub region {
   my $hdr = $args{'header'};
 
   # Retrieve header values.
-  my $basec1   = $hdr->{ "BASEC1" };
-  my $basec2   = $hdr->{ "BASEC2" };
+  my $basec1   = _getval( $hdr, "BASEC1" );
+  my $basec2   = _getval( $hdr, "BASEC2" );
   my $map_x    = $hdr->{ "MAP_X" };
   my $map_y    = $hdr->{ "MAP_Y" };
   my $map_pa   = $hdr->{ "MAP_PA" };
@@ -91,7 +91,7 @@ sub region {
     $tracksys = 'J2000';
   }
 
-  my $date_obs = $hdr->{ "DATE-OBS" };
+  my $date_obs = _getval( $hdr, "DATE-OBS" );
   if( $tracksys eq 'APP' && ! defined( $date_obs ) ) {
     croak "When TRACKSYS is APP, DATE_OBS must be defined";
   }
@@ -197,6 +197,30 @@ sub _rotate {
   my $yprime = $x * sin( $rot ) + $y * cos( $rot );
 
   return ( $xprime, $yprime );
+}
+
+=item B<_getval>
+
+Retrieve value from the header, including subheaders.
+
+=cut
+
+sub _getval {
+  my $hdr = shift;
+  my $key = shift;
+
+  if (exists $hdr->{$key}) {
+    return $hdr->{$key};
+  }
+
+  if (exists $hdr->{SUBHEADERS}) {
+    for my $sh (@{$hdr->{SUBHEADERS}}) {
+      if (exists $sh->{$key} && defined $sh->{$key}) {
+        return $sh->{$key};
+      }
+    }
+  }
+  return;
 }
 
 =end __PRIVATE__
