@@ -12,7 +12,7 @@ my $build = Module::Build->new
    dist_author => [
                    'Brad Cavanagh <b.cavanagh@jach.hawaii.edu>',
                   ],
-   dist_version => '0.01',
+   dist_version => '0.02',
    meta_merge => {
                   resources => {
                                 repository => '/jac_sw/gitroot/perl-JCMT-MapArea.git',
@@ -23,10 +23,12 @@ my $build = Module::Build->new
                 'Astro::Coords' => 0,
                 'Astro::SLA' => 0,
                 'Starlink::AST' => 0,
+                'Astro::FITS::Header' => 0,
                },
    build_requires => {
                       'Test::More' => 0,
                      },
+   script_files => [ qw/ maparea2region / ],
   );
 
 $build->create_build_script;

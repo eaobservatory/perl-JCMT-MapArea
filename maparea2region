@@ -1,0 +1,122 @@
+#!perl
+
+=head1 NAME
+
+maparea2region - Convert a JCMT map area to an AST region file
+
+=head1 SYNOPSIS
+
+  maparea2region --help
+
+  maparea2region file.sdf > region.txt
+  maparea2region *.sdf > cmpregion.txt
+
+=head1 DESCRIPTION
+
+This command reads a file and converts the MAP_ header information into an AST
+region text file that can be used for overlaying and masking using KAPPA commands
+such as ARDPLOT and REGIONMASK.
+
+If multiple files are given their regions are combined.
+
+=head1 ARGUMENTS
+
+The configuration file to be read is either specified as the last
+command line argument or via standard input on a pipe.
+
+=over 4
+
+=item B<-help>
+
+A help message.
+
+=item B<-man>
+
+This manual page.
+
+=item B<-version>
+
+Version of this software.
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Pod::Usage;
+
+use JCMT::MapArea;
+use Astro::FITS::Header;
+use Astro::FITS::Header::NDF;
+
+# Options
+my ($help, $man, $version);
+my $status = GetOptions("help" => \$help,
+                        "man" => \$man,
+                        "version" => \$version,
+                       );
+
+pod2usage(1) if !$status;
+
+pod2usage(1) if $help;
+pod2usage(1) unless @ARGV;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
+if ($version) {
+  print "maparea2region - Convert JCMT map area designation to AST region\n";
+  exit;
+}
+
+my $cmpregion;
+
+for my $f (@ARGV) {
+  my %tie;
+  my $hdr = Astro::FITS::Header::NDF->new( File => $f );
+  tie %tie, "Astro::FITS::Header", $hdr;
+  my $region = JCMT::MapArea::region( header => \%tie );
+  if (!defined $cmpregion) {
+    $cmpregion = $region;
+  } else {
+    $cmpregion = $cmpregion->CmpRegion( $region, Starlink::AST::Region::AST__OR(), "" );
+  }
+}
+
+# Write the region to stdout
+$cmpregion->Show() if defined $cmpregion;
+
+exit;
+
+=head1 NOTES
+
+Only works for JCMT NDF files with standard JCMT map area headers (MAP_PA, MAP_X, MAP_Y,
+MAP_WDTH, MAP_HGHT). This means ACSIS data and SCUBA-2 data.
+
+There is no support for SCUBA raw data at this time.
+
+=head1 AUTHOR
+
+Tim Jenness E<lt>t.jenness@jach.hawaii.eduE<gt>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2009 Science and Technology Facilities Council.
+All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful,but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place,Suite 330, Boston, MA  02111-1307, USA
+
+=cut
+
