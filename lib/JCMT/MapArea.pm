@@ -30,7 +30,7 @@ use Starlink::AST;
 my %TRACK2AST = ( 'J2000' => 'FK5',
                   'B1950' => 'FK4',
                   'APP' => 'GAPPT',
-                  'GALACTIC' => 'GALACTIC' );
+                  'GAL' => 'GALACTIC' );
 
 =head1 METHODS
 
@@ -96,24 +96,36 @@ sub region {
     croak "When TRACKSYS is APP, DATE_OBS must be defined";
   }
 
-  my ( $base, $basera, $basedec );
-  if( $tracksys ne 'APP' ) {
-    $base = new Astro::Coords( ra => $basec1,
-                               dec => $basec2,
-                               type => $tracksys,
-                               units => 'degrees' );
-    $basera = $base->ra->radians;
-    $basedec = $base->dec->radians;
-  } else {
-    $base = new Astro::Coords::Interpolated( ra1 => $basec1,
-                                             ra2 => $basec1,
-                                             dec1 => $basec2,
-                                             dec2 => $basec2,
-                                             units => 'degrees',
-                                             mjd1 => 0,
-                                             mjd2 => 0,
-                                           );
+  my ( $basera, $basedec );
+
+  if ($tracksys eq 'GAL') {
+    my $base = new Astro::Coords( long => $basec1,
+                                  lat => $basec2,
+                                  type => $tracksys,
+                                  units => 'degrees' );
+    ($basera, $basedec) = $base->glonglat;
+
+  } elsif ($tracksys eq 'APP') {
+    my $base = new Astro::Coords( ra1 => $basec1,
+                                  ra2 => $basec1,
+                                  dec1 => $basec2,
+                                  dec2 => $basec2,
+                                  units => 'degrees',
+                                  mjd1 => 0,
+                                  mjd2 => 0,
+                                );
     ( $basera, $basedec ) = $base->apparent();
+
+  } else {
+    my $base = new Astro::Coords( ra => $basec1,
+                                  dec => $basec2,
+                                  type => $tracksys,
+                                  units => 'degrees' );
+    if ($tracksys eq 'B1950') {
+      ($basera, $basedec) = $base->radec1950();
+    } else {
+      ($basera, $basedec) = $base->radec();
+    }
   }
 
 # Calculate the rotation angle in radians. Note that this position
