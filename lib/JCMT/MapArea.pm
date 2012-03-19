@@ -24,7 +24,7 @@ our $DEBUG = 0;
 our $VERSION = '0.01';
 
 use Astro::Coords;
-use Astro::SLA qw/ :sla :constants /;
+use Astro::PAL qw/ :pal :constants /;
 use Starlink::AST;
 
 my %TRACK2AST = ( 'J2000' => 'FK5',
@@ -153,19 +153,19 @@ sub region {
   my ( $rx, $ry ) = _rotate( $map_x, $map_y, $rot );
 
 # Calculate the corners in spherical coordinates.
-  slaDtp2s( ( $rx + $mrx1 ) * DAS2R,
+  palDtp2s( ( $rx + $mrx1 ) * DAS2R,
             ( $ry + $mry1 ) * DAS2R,
             $basera, $basedec,
             my $c1ra, my $c1dec );
-  slaDtp2s( ( $rx + $mrx2 ) * DAS2R,
+  palDtp2s( ( $rx + $mrx2 ) * DAS2R,
             ( $ry + $mry2 ) * DAS2R,
             $basera, $basedec,
             my $c2ra, my $c2dec );
-  slaDtp2s( ( $rx + $mrx3 ) * DAS2R,
+  palDtp2s( ( $rx + $mrx3 ) * DAS2R,
             ( $ry + $mry3 ) * DAS2R,
             $basera, $basedec,
             my $c3ra, my $c3dec );
-  slaDtp2s( ( $rx + $mrx4 ) * DAS2R,
+  palDtp2s( ( $rx + $mrx4 ) * DAS2R,
             ( $ry + $mry4 ) * DAS2R,
             $basera, $basedec,
             my $c4ra, my $c4dec );
