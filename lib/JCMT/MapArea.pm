@@ -153,22 +153,18 @@ sub region {
   my ( $rx, $ry ) = _rotate( $map_x, $map_y, $rot );
 
 # Calculate the corners in spherical coordinates.
-  palDtp2s( ( $rx + $mrx1 ) * DAS2R,
-            ( $ry + $mry1 ) * DAS2R,
-            $basera, $basedec,
-            my $c1ra, my $c1dec );
-  palDtp2s( ( $rx + $mrx2 ) * DAS2R,
-            ( $ry + $mry2 ) * DAS2R,
-            $basera, $basedec,
-            my $c2ra, my $c2dec );
-  palDtp2s( ( $rx + $mrx3 ) * DAS2R,
-            ( $ry + $mry3 ) * DAS2R,
-            $basera, $basedec,
-            my $c3ra, my $c3dec );
-  palDtp2s( ( $rx + $mrx4 ) * DAS2R,
-            ( $ry + $mry4 ) * DAS2R,
-            $basera, $basedec,
-            my $c4ra, my $c4dec );
+  my ($c1ra, $c1dec) = palDtp2s( ( $rx + $mrx1 ) * DAS2R,
+                                 ( $ry + $mry1 ) * DAS2R,
+                                 $basera, $basedec );
+  my ($c2ra, $c2dec) = palDtp2s( ( $rx + $mrx2 ) * DAS2R,
+                                 ( $ry + $mry2 ) * DAS2R,
+                                 $basera, $basedec );
+  my ($c3ra, $c3dec) = palDtp2s( ( $rx + $mrx3 ) * DAS2R,
+                                 ( $ry + $mry3 ) * DAS2R,
+                                 $basera, $basedec );
+  my ($c4ra, $c4dec) = palDtp2s( ( $rx + $mrx4 ) * DAS2R,
+                                 ( $ry + $mry4 ) * DAS2R,
+                                 $basera, $basedec );
 
 # Create the region.
   my $ast_system = $TRACK2AST{ uc( $tracksys ) };
