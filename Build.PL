@@ -21,7 +21,7 @@ my $build = Module::Build->new
    requires => {
                 'perl' => '5.8.0',
                 'Astro::Coords' => 0,
-                'Astro::SLA' => 0,
+                'Astro::PAL' => 0,
                 'Starlink::AST' => 0,
                 'Astro::FITS::Header' => 0,
                },
