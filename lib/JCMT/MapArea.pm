@@ -24,6 +24,8 @@ our $DEBUG = 0;
 our $VERSION = '0.01';
 
 use Astro::Coords;
+use Astro::Coords::Angle;
+use Astro::Coords::Angle::Hour;
 use Astro::PAL qw/ :pal :constants /;
 use Starlink::AST;
 
@@ -57,7 +59,7 @@ sub region {
 
   my (undef, $basera, $basedec,
       $rx, $ry, $corners,
-      $tracksys, $date_obs) = _info($hdr);
+      $tracksys, $date_obs, undef) = _info($hdr);
 
 # Calculate the corners in spherical coordinates.
   my @corner_ra = ();
@@ -85,6 +87,35 @@ sub region {
 # Return it.
   return $region;
 
+}
+
+=item B<radec_radius>
+
+Get the RA, declination and radius.
+
+    my ($ra, $dec, $rad) = JCMT::MapArea::radec_radius(header => $header);
+
+The RA and declination are returned as Astro::Coords::Angle objects.
+
+=cut
+
+sub radec_radius {
+  my %args = @_;
+  return undef unless defined $args{'header'};
+  my $hdr = $args{'header'};
+
+  my ($base, undef, undef,
+      $rx, $ry, undef, undef, undef, $map_rad) = _info($hdr);
+
+  my ($basera, $basedec) = $base->radec();
+
+  my ($ra, $dec) = palDtp2s($rx * DAS2R,
+                            $ry * DAS2R,
+                            $basera, $basedec);
+
+  return (new Astro::Coords::Angle::Hour($ra, units => 'rad'),
+          new Astro::Coords::Angle($dec, units => 'rad'),
+          $map_rad);
 }
 
 =begin __PRIVATE__
@@ -197,9 +228,11 @@ sub _info {
 # Calculate the rotated offset position.
   my ( $rx, $ry ) = _rotate( $map_x, $map_y, $rot );
 
+  my $map_rad = sqrt($map_wdth * $map_hght) / 2;
+
   return ($base, $basera, $basedec,
           $rx, $ry, \@corners,
-          $tracksys, $date_obs);
+          $tracksys, $date_obs, $map_rad);
 }
 
 =item B<_rotate>
