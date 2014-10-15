@@ -55,6 +55,50 @@ sub region {
 
   my $hdr = $args{'header'};
 
+  my (undef, $basera, $basedec,
+      $rx, $ry, $corners,
+      $tracksys, $date_obs) = _info($hdr);
+
+# Calculate the corners in spherical coordinates.
+  my @corner_ra = ();
+  my @corner_dec = ();
+
+  foreach my $corner (@$corners) {
+    my ($mrx, $mry) = @$corner;
+    my ($cra, $cdec) = palDtp2s( ( $rx + $mrx ) * DAS2R,
+                                 ( $ry + $mry ) * DAS2R,
+                                 $basera, $basedec );
+    push @corner_ra, $cra;
+    push @corner_dec, $cdec;
+  }
+
+# Create the region.
+  my $ast_system = $TRACK2AST{ uc( $tracksys ) };
+  my $params = "SYSTEM=$ast_system";
+  if( $tracksys eq 'APP' ) {
+    $params .= ",EPOCH=$date_obs";
+  }
+  my $skyFrame = new Starlink::AST::SkyFrame( $params );
+  my $region = Starlink::AST::Polygon->new( $skyFrame, \@corner_ra, \@corner_dec,
+                                            undef, "" );
+
+# Return it.
+  return $region;
+
+}
+
+=begin __PRIVATE__
+
+=item B<_info>
+
+Gather the information required from a header in order to
+be able to determine the map region.
+
+=cut
+
+sub _info {
+  my $hdr = shift;
+
   # Retrieve header values.
   my $basec1   = _getval( $hdr, "BASEC1" );
   my $basec2   = _getval( $hdr, "BASEC2" );
@@ -96,17 +140,17 @@ sub region {
     croak "When TRACKSYS is APP, DATE_OBS must be defined";
   }
 
-  my ( $basera, $basedec );
+  my ( $base, $basera, $basedec );
 
   if ($tracksys eq 'GAL') {
-    my $base = new Astro::Coords( long => $basec1,
+    $base = new Astro::Coords( long => $basec1,
                                   lat => $basec2,
                                   type => $tracksys,
                                   units => 'degrees' );
     ($basera, $basedec) = $base->glonglat;
 
   } elsif ($tracksys eq 'APP') {
-    my $base = new Astro::Coords( ra1 => $basec1,
+    $base = new Astro::Coords( ra1 => $basec1,
                                   ra2 => $basec1,
                                   dec1 => $basec2,
                                   dec2 => $basec2,
@@ -117,7 +161,7 @@ sub region {
     ( $basera, $basedec ) = $base->apparent();
 
   } else {
-    my $base = new Astro::Coords( ra => $basec1,
+    $base = new Astro::Coords( ra => $basec1,
                                   dec => $basec2,
                                   type => $tracksys,
                                   units => 'degrees' );
@@ -144,46 +188,19 @@ sub region {
   my $my4 =        $map_hght / 2;
 
 # Convert these positions into rotated offsets.
-  my ( $mrx1, $mry1 ) = _rotate( $mx1, $my1, $rot );
-  my ( $mrx2, $mry2 ) = _rotate( $mx2, $my2, $rot );
-  my ( $mrx3, $mry3 ) = _rotate( $mx3, $my3, $rot );
-  my ( $mrx4, $mry4 ) = _rotate( $mx4, $my4, $rot );
+  my @corners;
+  push @corners, [_rotate( $mx1, $my1, $rot )];
+  push @corners, [_rotate( $mx2, $my2, $rot )];
+  push @corners, [_rotate( $mx3, $my3, $rot )];
+  push @corners, [_rotate( $mx4, $my4, $rot )];
 
 # Calculate the rotated offset position.
   my ( $rx, $ry ) = _rotate( $map_x, $map_y, $rot );
 
-# Calculate the corners in spherical coordinates.
-  my ($c1ra, $c1dec) = palDtp2s( ( $rx + $mrx1 ) * DAS2R,
-                                 ( $ry + $mry1 ) * DAS2R,
-                                 $basera, $basedec );
-  my ($c2ra, $c2dec) = palDtp2s( ( $rx + $mrx2 ) * DAS2R,
-                                 ( $ry + $mry2 ) * DAS2R,
-                                 $basera, $basedec );
-  my ($c3ra, $c3dec) = palDtp2s( ( $rx + $mrx3 ) * DAS2R,
-                                 ( $ry + $mry3 ) * DAS2R,
-                                 $basera, $basedec );
-  my ($c4ra, $c4dec) = palDtp2s( ( $rx + $mrx4 ) * DAS2R,
-                                 ( $ry + $mry4 ) * DAS2R,
-                                 $basera, $basedec );
-
-# Create the region.
-  my $ast_system = $TRACK2AST{ uc( $tracksys ) };
-  my $params = "SYSTEM=$ast_system";
-  if( $tracksys eq 'APP' ) {
-    $params .= ",EPOCH=$date_obs";
-  }
-  my $skyFrame = new Starlink::AST::SkyFrame( $params );
-  my $region = Starlink::AST::Polygon->new( $skyFrame,
-                                            [ $c1ra, $c2ra, $c3ra, $c4ra ],
-                                            [ $c1dec, $c2dec, $c3dec, $c4dec ],
-                                            undef, "" );
-
-# Return it.
-  return $region;
-
+  return ($base, $basera, $basedec,
+          $rx, $ry, \@corners,
+          $tracksys, $date_obs);
 }
-
-=begin __PRIVATE__
 
 =item B<_rotate>
 
