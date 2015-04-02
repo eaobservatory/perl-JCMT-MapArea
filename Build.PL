@@ -15,7 +15,7 @@ my $build = Module::Build->new
    dist_version => '0.02',
    meta_merge => {
                   resources => {
-                                repository => '/jac_sw/gitroot/perl-JCMT-MapArea.git',
+                                repository => 'git://github.com/eaobservatory/perl-JCMT-MapArea.git',
                                },
                  },
    requires => {
